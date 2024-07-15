@@ -5,7 +5,7 @@
     {% set rst_type = config['register_reset']%}
     {% if rst_type == 'sync_pos' %}
 process (clk) begin
-if rising_edge(clk) then
+if rising_edge(clk, rst) then
 if (rst = '1') then
     {% for s, i in zip(sig, init) %}
     {{s}} <= {{i}};
@@ -13,22 +13,22 @@ if (rst = '1') then
 else
     {%- elif rst_type == 'sync_neg' %}
 process (clk) begin
-if rising_edge(clk) then
-if (rst = '0') then
+if rising_edge(clk, rstn) then
+if (rstn = '0') then
     {% for s, i in zip(sig, init) %}
     {{s}} <= {{i}};
     {% endfor -%}
 else
     {%- elif rst_type == 'async_pos' %}
-process (clk, rst) begin
-if (rst = '1') then
+process (clk, arst) begin
+if (arst = '1') then
     {% for s, i in zip(sig, init) %}
     {{s}} <= {{i}};
     {% endfor -%}
 elsif rising_edge(clk) then
     {%- elif rst_type == 'async_neg' %}
-process (clk, rst) begin
-if (rst = '0') then
+process (clk, arstn) begin
+if (arstn = '0') then
     {% for s, i in zip(sig, init) %}
     {{s}} <= {{i}};
     {% endfor -%}
@@ -64,7 +64,19 @@ generic(
 );
 port(
     clk    : in std_logic;
+{#- 'process' reset input #}
+{% macro reset_on_entity(sig=['test'], init=["'0'"]) %}
+    {% set rst_type = config['register_reset']%}
+    {% if rst_type == 'sync_pos' %}
     rst    : in std_logic;
+    {%- elif rst_type == 'sync_neg' %}
+    rstn   : in std_logic;
+    {%- elif rst_type == 'async_pos' %}
+    arst    : in std_logic;
+    {%- elif rst_type == 'async_neg' %}
+    arstn   : in std_logic;
+    {% endif %}
+{%- endmacro %}
     -- Local Bus
     wready : in  std_logic;
     waddr  : out std_logic_vector(ADDR_W-1 downto 0);

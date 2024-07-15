@@ -67,24 +67,24 @@ x"{{ ('{:0%dx}' % (width//4)).format(val) }}"
     {% set rst_type = config['register_reset']%}
     {% if rst_type == 'sync_pos' %}
 process (clk) begin
-if rising_edge(clk) then
+if rising_edge(clk, rst) then
 if (rst = '1') then
     {{ sig }} <= {{ literal(init, width, width_is_param) }}; {{ literal_comment(init) }}
 else
     {%- elif rst_type == 'sync_neg' %}
 process (clk) begin
-if rising_edge(clk) then
-if (rst = '0') then
+if rising_edge(clk, rstn) then
+if (rstn = '0') then
     {{ sig }} <= {{ literal(init, width, width_is_param) }}; {{ literal_comment(init) }}
 else
     {%- elif rst_type == 'async_pos' %}
-process (clk, rst) begin
-if (rst = '1') then
+process (clk, arst) begin
+if (arst = '1') then
     {{ sig }} <= {{ literal(init, width, width_is_param) }}; {{ literal_comment(init) }}
 elsif rising_edge(clk) then
     {%- elif rst_type == 'async_neg' %}
-process (clk, rst) begin
-if (rst = '0') then
+process (clk, arstn) begin
+if (arstn = '0') then
     {{ sig }} <= {{ literal(init, width, width_is_param) }}; {{ literal_comment(init) }}
 elsif rising_edge(clk) then
     {%- endif %}
@@ -230,7 +230,17 @@ generic(
 );
 port(
     clk    : in std_logic;
+    {% set rst_type = config['register_reset']%}
+    {% if rst_type == 'sync_pos' %}
     rst    : in std_logic;
+    {%- elif rst_type == 'sync_neg' %}
+    rstn   : in std_logic;
+    {%- elif rst_type == 'async_pos' %}
+    arst   : in std_logic;
+    {%- elif rst_type == 'async_neg' %}
+    arstn  : in std_logic;
+    {%- endif %}
+
 {% for reg in rmap %}
     {% for bf in reg %}
     -- {{ reg.name }}.{{ bf.name }}
