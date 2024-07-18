@@ -1,0 +1,156 @@
+{#- Many thanks to github.com/smirnovich for providing the VHDL code for this template #}
+
+{#- 'process' header with reset logic #}
+{% macro process_begin(sig='test', init="'0'") %}
+    {% set rst_type = config['register_reset']%}
+    {% if rst_type == 'sync_pos' %}
+process (clk) begin
+if rising_edge(clk) then
+if (rst = '1') then
+    {{ sig }} <= {{ init }};
+else
+    {%- elif rst_type == 'sync_neg' %}
+process (clk) begin
+if rising_edge(clk) then
+if (rst = '0') then
+    {{ sig }} <= {{ init }};
+else
+    {%- elif rst_type == 'async_pos' %}
+process (clk, rst) begin
+if (rst = '1') then
+    {{ sig }} <= {{ init }};
+elsif rising_edge(clk) then
+    {%- elif rst_type == 'async_neg' %}
+process (clk, rst) begin
+if (rst = '0') then
+    {{ sig }} <= {{ init }};
+elsif rising_edge(clk) then
+    {%- endif %}
+{%- endmacro %}
+
+{#- 'process' footer #}
+{% macro process_end() %}
+    {% if 'async' in config['register_reset'] %}
+end if;
+end process;
+    {% else %}
+end if;
+end if;
+end process;
+    {% endif %}
+{%- endmacro %}
+
+-- Created with Corsair v{{ corsair_ver }}
+--
+-- Avalon-MM to Local Bus bridge
+--
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity {{ module_name }} is
+generic(
+    ADDR_W : integer := {{ config['address_width'] }};
+    DATA_W : integer := {{ config['data_width'] }};
+    STRB_W : integer := {{ config['data_width'] // 8 }}
+);
+port(
+    clk : in std_logic;
+    rst : in std_logic;
+    -- Local Bus
+    wready : in  std_logic;
+    waddr  : out std_logic_vector(ADDR_W-1 downto 0);
+    wdata  : out std_logic_vector(DATA_W-1 downto 0);
+    wen    : out std_logic;
+    wstrb  : out std_logic_vector(STRB_W-1 downto 0);
+    rdata  : in  std_logic_vector(DATA_W-1 downto 0);
+    rvalid : in  std_logic;
+    raddr  : out std_logic_vector(ADDR_W-1 downto 0);
+    ren    : out std_logic;
+    {% macro wb_ports() %}
+    -- Avalon-MM
+    wb_adr_i  : in  std_logic_vector (ADDR_W - 1 downto 0);
+    wb_dat_i  : in  std_logic_vector (DATA_W - 1 downto 0);
+    wb_we_i   : in  std_logic;
+    wb_stb_i  : in  std_logic;
+    wb_cyc_i  : in  std_logic;
+    wb_sel_i  : in  std_logic_vector (STRB_W - 1 downto 0);
+    wb_dat_o  : out std_logic_vector (DATA_W - 1 downto 0);
+    wb_ack_o  : out std_logic
+    {% endmacro %}
+    {{ wb_ports() }}
+);
+end {{ module_name }};
+architecture arch_imp of {{ module_name }} is
+{% macro amm_signals(regmap_embed=False) %}
+    {% if regmap_embed %}
+signal wready : std_logic;
+signal waddr  : std_logic_vector(ADDR_W-1 downto 0);
+signal wdata  : std_logic_vector(DATA_W-1 downto 0);
+signal wen    : std_logic;
+signal wstrb  : std_logic_vector(STRB_W-1 downto 0);
+signal rdata  : std_logic_vector(DATA_W-1 downto 0);
+signal rvalid : std_logic;
+signal raddr  : std_logic_vector(ADDR_W-1 downto 0);
+signal ren    : std_logic;
+    {% endif %}
+signal ren_int   : std_logic;
+{% endmacro %}
+{{ amm_signals() }}
+begin
+{% macro wb_core() %}
+  waddr <= address;
+  raddr <= address;
+  
+  waitrequest <= not wready;
+  readdatavalid <= rvalid;
+  
+  wdata    <= writedata;
+  readdata <= rdata;
+  
+  wen <= write;
+  
+  wstrb <= byteenable;
+  
+  {{ process_begin("ren_int", "'1'") }}
+          if (rvalid = '0' and wb_cyc_i = '1' and wb_stb_i = '1' and wb_we_i = '0') then
+              ren_int <= '1';
+          elsif (rvalid = '1') then
+              ren_int <= '0';
+          end if;
+        end if;
+      end if;
+    end process;
+  {{ process_end() }}
+
+  ren <= ren_int;
+  p_ack : process(clk, rst)
+  begin
+    if (rst = '1') then
+      c_state <= s_idle;
+    elsif rising_edge (clk) then
+      --c_state <= n_state;  
+      case c_state is
+        when s_idle =>
+           if (wb_cyc_i = '1' and wb_stb_i = '1') then
+             if (wb_we_i = '1') then
+               c_state <= s_write;
+             else  
+               c_state <= s_read;
+             end if;  
+           end if;
+         when s_write =>
+           if (wready = '1') then
+             c_state <= s_idle;
+           end if;  
+         when s_read =>
+           if (rvalid = '1') then
+             c_state <= s_idle;
+           end if;  
+      end case;
+    end if;  
+  end process;
+
+{% endmacro %}
+{{ wb_core() }}
+end arch_imp;

@@ -239,7 +239,7 @@ class Verilog(Generator, Jinja2):
     :type path: str
     :param read_filler: Numeric value to return if wrong address was read
     :type read_filler: int
-    :param interface: Register map bus protocol. Use one of: `axil`, `apb`, `amm`, `lb`
+    :param interface: Register map bus protocol. Use one of: `axil`, `apb`, `amm`, `wb`, `lb`
     :type interface: str
     """
 
@@ -251,7 +251,7 @@ class Verilog(Generator, Jinja2):
 
     def validate(self):
         super().validate()
-        assert self.interface in ['axil', 'apb', 'amm', 'lb'], \
+        assert self.interface in ['axil', 'apb', 'amm', 'wb', 'lb'], \
             "Unknown '%s' interface!" % (self.interface)
 
     def generate(self):
@@ -279,7 +279,7 @@ class Vhdl(Generator, Jinja2):
     :type path: str
     :param read_filler: Numeric value to return if wrong address was read
     :type read_filler: int
-    :param interface: Register map bus protocol. Use one of: `axil`, `apb`, `amm`, `lb`
+    :param interface: Register map bus protocol. Use one of: `axil`, `apb`, `amm`, `wb`, `lb`
     :type interface: str
     """
 
@@ -291,7 +291,7 @@ class Vhdl(Generator, Jinja2):
 
     def validate(self):
         super().validate()
-        assert self.interface in ['axil', 'apb', 'amm', 'lb'], \
+        assert self.interface in ['axil', 'apb', 'amm', 'wb', 'lb'], \
             "Unknown '%s' interface!" % (self.interface)
 
     def generate(self):
@@ -417,7 +417,7 @@ class LbBridgeVerilog(Generator, Jinja2):
     :type rmap: :class:`corsair.RegisterMap`
     :param path: Path to the output file
     :type path: str
-    :param bridge_type: Bridge protocol. Use one of `axil`, `apb`, `amm`.
+    :param bridge_type: Bridge protocol. Use one of `axil`, `apb`, `wb`, `amm`.
     :type bridge_type: str
     """
 
@@ -427,7 +427,7 @@ class LbBridgeVerilog(Generator, Jinja2):
         self.bridge_type = bridge_type
 
     def validate(self):
-        assert self.bridge_type in ['axil', 'apb', 'amm'], \
+        assert self.bridge_type in ['axil', 'apb', 'amm', 'wb'], \
             "Unknown '%s' bridge type!" % (self.bridge_type)
 
     def generate(self):
@@ -440,6 +440,8 @@ class LbBridgeVerilog(Generator, Jinja2):
             j2_template = 'apb2lb_verilog.j2'
         elif self.bridge_type == 'amm':
             j2_template = 'amm2lb_verilog.j2'
+        elif self.bridge_type == 'wb':
+            j2_template = 'wb2lb_verilog.j2'
         j2_vars = {}
         j2_vars['corsair_ver'] = __version__
         j2_vars['module_name'] = utils.get_file_name(self.path)
@@ -455,7 +457,7 @@ class LbBridgeVhdl(Generator, Jinja2):
     :type rmap: :class:`corsair.RegisterMap`
     :param path: Path to the output file
     :type path: str
-    :param bridge_type: Bridge protocol. Use one of `axil`, `apb`, `amm`.
+    :param bridge_type: Bridge protocol. Use one of `axil`, `apb`, `amm`, `wb`.
     :type bridge_type: str
     """
 
@@ -465,7 +467,7 @@ class LbBridgeVhdl(Generator, Jinja2):
         self.bridge_type = bridge_type
 
     def validate(self):
-        assert self.bridge_type in ['axil', 'apb', 'amm'], \
+        assert self.bridge_type in ['axil', 'apb', 'amm', 'wb'], \
             "Unknown '%s' bridge type!" % (self.bridge_type)
 
     def generate(self):
@@ -478,6 +480,8 @@ class LbBridgeVhdl(Generator, Jinja2):
             j2_template = 'apb2lb_vhdl.j2'
         elif self.bridge_type == 'amm':
             j2_template = 'amm2lb_vhdl.j2'
+        elif self.bridge_type == 'wb':
+            j2_template = 'wb2lb_vhdl.j2'
         j2_vars = {}
         j2_vars['corsair_ver'] = __version__
         j2_vars['module_name'] = utils.get_file_name(self.path)

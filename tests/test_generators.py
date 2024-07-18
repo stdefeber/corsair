@@ -155,6 +155,10 @@ class TestLbBridgeVhdl:
         with open(output_file, 'r') as f:
             raw_str = ''.join(f.readlines())
         assert assert_str in raw_str
+ 
+    def test_wb(self, tmpdir):
+        """Test of creating Wishbone to LocalBus module in VHDL"""
+        self._test(tmpdir, 'wb2lb.vhd', 'apb', 'Wishbone to Local Bus bridge')
 
     def test_apb(self, tmpdir):
         """Test of creating APB to LocalBus module in VHDL"""
