@@ -15,7 +15,7 @@ Corsair is a tool that makes it easy to create and maintain control and status r
 
 - Various human-readable input formats: JSON, YAML or plain text table
 - HDL code generation: Verilog or VHDL module with register map, Verilog header or SystemVerilog package with parameters and definitions
-- Multi-protocol support: APB, AXI-Lite, Avalon-MM
+- Multi-protocol support: APB, AXI-Lite, Avalon-MM and Wishbone
 - Documentation generation: Markdown, AsciiDoc
 - Generation of software-related files: C header, Python module
 - Extensibility: support of external file generators
