@@ -164,6 +164,7 @@ csr_{{ reg.name.lower() }}_wen
 {#- TEMPLATE NAMESPACE #}
 {% set tmp = namespace() %}
 {% from "amm2lb_verilog.j2" import amm_core with context %}
+{% from "wb2lb_verilog.j2" import wb_core with context %}
 {% from "axil2lb_verilog.j2" import axil_core with context %}
 {% from "apb2lb_verilog.j2" import apb_core with context %}
 
@@ -226,6 +227,8 @@ module {{ module_name }} #(
 {{ axil_core(regmap_embed=True) }}
 {% elif interface == 'amm' %}
 {{ amm_core(regmap_embed=True) }}
+{% elif interface == 'wb' %}
+{{ wb_core(regmap_embed=True) }}
 {% else %}
     // Local Bus
     input  [ADDR_W-1:0] waddr,

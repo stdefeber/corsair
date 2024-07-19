@@ -206,6 +206,9 @@ else
 
 {#- TEMPLATE NAMESPACE #}
 {% set tmp = namespace() %}
+{% from "wb2lb_vhdl.j2" import wb_core with context %}
+{% from "wb2lb_vhdl.j2" import wb_ports with context %}
+{% from "wb2lb_vhdl.j2" import wb_signals with context %}
 {% from "amm2lb_vhdl.j2" import amm_core with context %}
 {% from "amm2lb_vhdl.j2" import amm_ports with context %}
 {% from "amm2lb_vhdl.j2" import amm_signals with context %}
@@ -279,6 +282,8 @@ port(
 {{ axil_ports() }}
 {% elif interface == 'amm' %}
 {{ amm_ports() }}
+{% elif interface == 'wb' %}
+{{ wb_ports() }}
 {% else %}
     -- Local Bus
     waddr  : in  std_logic_vector(ADDR_W-1 downto 0);
@@ -302,6 +307,8 @@ architecture rtl of {{ module_name }} is
 {{ axil_signals(regmap_embed=True) }}
 {% elif interface == 'amm' %}
 {{ amm_signals(regmap_embed=True) }}
+{% elif interface == 'wb' %}
+{{ wb_signals(regmap_embed=True) }}
 {% endif %}
 {% for reg in rmap %}
 signal {{ sig_csr_rdata(reg) }} : {{ range_decl(config['data_width'] - 1) }};
@@ -348,6 +355,8 @@ begin
 {{ axil_core() }}
 {% elif interface == 'amm' %}
 {{ amm_core() }}
+{% elif interface == 'wb' %}
+{{ wb_core() }}
 {% endif %}
 {% for reg in rmap %}
 --------------------------------------------------------------------------------

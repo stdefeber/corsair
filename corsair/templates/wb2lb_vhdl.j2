@@ -4,45 +4,49 @@
 {% macro process_begin(sig='test', init="'0'") %}
     {% set rst_type = config['register_reset']%}
     {% if rst_type == 'sync_pos' %}
-process (clk) begin
-if rising_edge(clk) then
-if (rst = '1') then
-    {{ sig }} <= {{ init }};
-else
-    {%- elif rst_type == 'sync_neg' %}
-process (clk) begin
-if rising_edge(clk) then
-if (rst = '0') then
-    {{ sig }} <= {{ init }};
-else
-    {%- elif rst_type == 'async_pos' %}
-process (clk, rst) begin
-if (rst = '1') then
-    {{ sig }} <= {{ init }};
-elsif rising_edge(clk) then
+process (clk) 
+  begin
+    if rising_edge(clk) then
+    if (rst = '1') then
+      {{ sig }} <= {{ init }};
+    else
+      {%- elif rst_type == 'sync_neg' %}
+process (clk) 
+  begin
+    if rising_edge(clk) then
+    if (rst = '0') then
+      {{ sig }} <= {{ init }};
+    else
+      {%- elif rst_type == 'async_pos' %}
+process (clk, rst) 
+  begin
+    if (rst = '1') then
+      {{ sig }} <= {{ init }};
+    elsif rising_edge(clk) then
     {%- elif rst_type == 'async_neg' %}
-process (clk, rst) begin
-if (rst = '0') then
-    {{ sig }} <= {{ init }};
-elsif rising_edge(clk) then
+process (clk, rst)
+  begin
+    if (rst = '0') then
+      {{ sig }} <= {{ init }};
+    elsif rising_edge(clk) then
     {%- endif %}
 {%- endmacro %}
 
 {#- 'process' footer #}
 {% macro process_end() %}
     {% if 'async' in config['register_reset'] %}
-end if;
-end process;
+  end if;
+  end process;
     {% else %}
-end if;
-end if;
-end process;
+    end if;
+  end if;
+  end process;
     {% endif %}
 {%- endmacro %}
 
 -- Created with Corsair v{{ corsair_ver }}
 --
--- Avalon-MM to Local Bus bridge
+-- Wishbone to Local Bus bridge
 --
 library ieee;
 use ieee.std_logic_1164.all;
@@ -82,8 +86,12 @@ port(
 );
 end {{ module_name }};
 architecture arch_imp of {{ module_name }} is
-{% macro amm_signals(regmap_embed=False) %}
+{% macro wb_signals(regmap_embed=False) %}
     {% if regmap_embed %}
+
+type fsm_states is (s_idle, s_write, s_read);
+signal c_state : fsm_states;
+
 signal wready : std_logic;
 signal waddr  : std_logic_vector(ADDR_W-1 downto 0);
 signal wdata  : std_logic_vector(DATA_W-1 downto 0);
@@ -96,40 +104,35 @@ signal ren    : std_logic;
     {% endif %}
 signal ren_int   : std_logic;
 {% endmacro %}
-{{ amm_signals() }}
+{{ wb_signals() }}
 begin
 {% macro wb_core() %}
-  waddr <= address;
-  raddr <= address;
-  
-  waitrequest <= not wready;
-  readdatavalid <= rvalid;
-  
-  wdata    <= writedata;
-  readdata <= rdata;
-  
-  wen <= write;
-  
-  wstrb <= byteenable;
-  
+  waddr <= wb_adr_i;
+  raddr <= wb_adr_i;
+
+
+  wdata <= wb_dat_i;
+  wb_dat_o <= rdata;
+  wstrb <= wb_sel_i;
+
+  wb_ack_o <= wready when c_state = s_write else
+              rvalid when c_state = s_read else
+              '0';
+   
+  wen <= '1' when (wb_cyc_i = '1' and wb_stb_i = '1' and wb_we_i = '1' ) else '0';
+
+ 
   {{ process_begin("ren_int", "'1'") }}
-          if (rvalid = '0' and wb_cyc_i = '1' and wb_stb_i = '1' and wb_we_i = '0') then
-              ren_int <= '1';
-          elsif (rvalid = '1') then
-              ren_int <= '0';
-          end if;
-        end if;
+      if (rvalid = '0' and wb_cyc_i = '1' and wb_stb_i = '1' and wb_we_i = '0') then
+        ren_int <= '1';
+      elsif (rvalid = '1') then
+        ren_int <= '0';
       end if;
-    end process;
   {{ process_end() }}
 
   ren <= ren_int;
-  p_ack : process(clk, rst)
-  begin
-    if (rst = '1') then
-      c_state <= s_idle;
-    elsif rising_edge (clk) then
-      --c_state <= n_state;  
+
+  {{ process_begin("ren_int", "'1'") }}
       case c_state is
         when s_idle =>
            if (wb_cyc_i = '1' and wb_stb_i = '1') then
@@ -148,8 +151,7 @@ begin
              c_state <= s_idle;
            end if;  
       end case;
-    end if;  
-  end process;
+  {{ process_end() }}
 
 {% endmacro %}
 {{ wb_core() }}

@@ -33,6 +33,8 @@ logic              ren;
     `include "dut_axil2lb.svh"
 `elsif DUT_AMM
     `include "dut_amm2lb.svh"
+`elsif DUT_WB
+    `include "dut_wb2lb.svh"
 `elsif DUT_SPI
     `include "dut_spi2lb.svh"
 `else
