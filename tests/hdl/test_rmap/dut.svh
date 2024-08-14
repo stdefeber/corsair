@@ -208,7 +208,8 @@ apb #(
   .wb_cyc_i  (mst.wb_cyc_i),
   .wb_sel_i  (mst.wb_sel_i),
   .wb_dat_o  (mst.wb_dat_o),
-  .wb_ack_o  (mst.wb_ack_o),
+  .wb_ack_o  (mst.wb_ack_o)
+);
 // Wishbone master
 wb #(
   .ADDR_W(ADDR_W),
