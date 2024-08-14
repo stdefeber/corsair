@@ -5,7 +5,6 @@
 """
 
 import sys
-#from attrs.setters import convert
 sys.path.insert(0, '../..')
 import pytest
 from sim import Simulator, CliArgs, path_join, parent_dir
