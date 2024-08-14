@@ -200,9 +200,6 @@ apb #(
     .presetn (~rst)
 );
 `elsif INTERFACE_WB
-wb2lb dut (
-  .clk          (clk      ),
-  .rst          (reset    ),
   // Wishbone
   .wb_adr_i  (mst.wb_adr_i),
   .wb_dat_i  (mst.wb_dat_i),
@@ -212,17 +209,6 @@ wb2lb dut (
   .wb_sel_i  (mst.wb_sel_i),
   .wb_dat_o  (mst.wb_dat_o),
   .wb_ack_o  (mst.wb_ack_o),
-  // Local Bus
-  .wready    (wready      ),
-  .waddr     (waddr       ),
-  .wdata     (wdata       ),
-  .wen       (wen         ),
-  .wstrb     (wstrb       ),
-  .rdata     (rdata       ),
-  .rvalid    (rvalid      ),
-  .raddr     (raddr       ),
-  .ren       (ren         )
-);
 // Wishbone master
 wb #(
   .ADDR_W(ADDR_W),
