@@ -87,10 +87,10 @@ port(
 end {{ module_name }};
 architecture arch_imp of {{ module_name }} is
 
+{% macro wb_signals(regmap_embed=False) %}
 type fsm_states is (s_idle, s_write, s_read);
 signal c_state : fsm_states;
 
-{% macro wb_signals(regmap_embed=False) %}
     {% if regmap_embed %}
 
 signal wready : std_logic;
@@ -133,7 +133,7 @@ begin
 
   ren <= ren_int;
 
-  {{ process_begin("ren_int", "'1'") }}
+  {{ process_begin("c_state", "s_idle") }}
       case c_state is
         when s_idle =>
            if (wb_cyc_i = '1' and wb_stb_i = '1') then

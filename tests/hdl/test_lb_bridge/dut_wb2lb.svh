@@ -22,7 +22,7 @@ wb2lb dut (
   .ren       (ren         )
 );
 
-// Avalon-MM master
+// Wishbone master
 wb #(
   .ADDR_W(ADDR_W),
   .DATA_W(DATA_W),
