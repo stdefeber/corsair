@@ -86,11 +86,12 @@ port(
 );
 end {{ module_name }};
 architecture arch_imp of {{ module_name }} is
-{% macro wb_signals(regmap_embed=False) %}
-    {% if regmap_embed %}
 
 type fsm_states is (s_idle, s_write, s_read);
 signal c_state : fsm_states;
+
+{% macro wb_signals(regmap_embed=False) %}
+    {% if regmap_embed %}
 
 signal wready : std_logic;
 signal waddr  : std_logic_vector(ADDR_W-1 downto 0);

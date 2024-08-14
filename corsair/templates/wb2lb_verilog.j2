@@ -31,11 +31,11 @@ module {{ module_name }} #(
     output [DATA_W-1:0] wb_dat_o,
     output              wb_ack_o  
 );
-{% if regmap_embed %}
-
 
 reg [1:0] c_state;
 parameter s_idle=0, s_write=1, s_read=2;
+
+{% if regmap_embed %}
 
 wire              wready;
 wire [ADDR_W-1:0] waddr;
