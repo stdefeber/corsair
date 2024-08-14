@@ -55,7 +55,7 @@ interface wb #(
     wb_we_i  = 0;
     wb_stb_i = 0;
     wb_cyc_i = 0;
-    data = readdata;
+    data = wb_dat_o;
   endtask : read
 
 endinterface
