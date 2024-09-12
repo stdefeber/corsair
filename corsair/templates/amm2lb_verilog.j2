@@ -56,6 +56,7 @@ wire              ren;
 
   assign wstrb = byteenable;
   reg ren_int;
+  reg {{ range_decl(config['data_width'] - 1) }} raddr_int;
   {% set rst_type = config['register_reset']%}
   {%- if rst_type == 'async_pos' or rst_type == 'sync_pos' %}
       {% set rst_active = 1%}
@@ -76,6 +77,13 @@ wire              ren;
         if (rvalid)
           ren_int <= 1'b0;
     end
+  end
+
+  reg {{ range_decl(config['data_width'] - 1) }} raddr_int;
+  {{ always_begin(sig='raddr_int', width=config['data_width'], init=read_filler
+  )}} if (read) begin
+        raddr_int <= address;
+      end
   end
 
   assign ren = ren_int;
