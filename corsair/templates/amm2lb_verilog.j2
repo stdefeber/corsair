@@ -56,7 +56,6 @@ wire              ren;
 
   assign wstrb = byteenable;
   reg ren_int;
-  reg {{ range_decl(config['data_width'] - 1) }} raddr_int;
   {% set rst_type = config['register_reset']%}
   {%- if rst_type == 'async_pos' or rst_type == 'sync_pos' %}
       {% set rst_active = 1%}
